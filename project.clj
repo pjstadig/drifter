@@ -3,4 +3,12 @@
   :url "https://github.com/pjstadig/drifter"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]])
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/java.jdbc "0.6.0"]]
+  :test-selectors {:default :postgresql
+                   :all (constantly true)
+                   :mysql :mysql
+                   :postgresql :postgresql}
+  :profiles
+  {:dev {:dependencies [[mysql/mysql-connector-java "5.1.38"]
+                        [org.postgresql/postgresql "9.4.1208.jre7"]]}})

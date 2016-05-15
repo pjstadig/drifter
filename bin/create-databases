@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+if type mysql &>/dev/null; then
+  mysql -u root <<-EOF
+DROP DATABASE IF EXISTS wayfarer_test;
+EOF
+
+  (mysql -u root <<-EOF &>/dev/null) || true
+DROP USER 'wayfarer'@'localhost';
+EOF
+
+  mysql -u root <<-EOF
+CREATE USER 'wayfarer'@'localhost' IDENTIFIED BY 'wayfarer';
+CREATE DATABASE wayfarer_test;
+GRANT ALL PRIVILEGES ON wayfarer_test.* TO 'wayfarer'@'localhost';
+FLUSH PRIVILEGES;
+EOF
+fi
+
+if type psql &>/dev/null; then
+  (sudo -u postgres dropdb wayfarer_test &>/dev/null) || /bin/true
+  (sudo -u postgres dropuser wayfarer &>/dev/null) || /bin/true
+  sudo -u postgres /usr/bin/psql -c "create user wayfarer with createrole superuser password 'wayfarer';"
+  PGPASSWORD="wayfarer" createdb -h localhost -U wayfarer wayfarer_test
+fi
