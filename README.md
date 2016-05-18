@@ -220,7 +220,7 @@ One hitch with this would be foreign key relationships.  If the `articles` table
 has a constraint that references the `users` table, then they must be defined in
 a particular order.  You can fix this two ways 1) you can just have a single
 list of migrations for the whole application or 2) you could add an additional
-list of migrations for adding constraints to you tables and concat it on the
+list of migrations for adding constraints to your tables and concat it on the
 end.
 
 An advantage of this approach is seeing the migrations related to the objects in
