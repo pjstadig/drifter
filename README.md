@@ -123,8 +123,8 @@ fully cross-database DSL is not possible.
 Most applications have no need to talk to more than one database system at the
 same time and rarely do they ever switch databases.  Even when you do switch
 database systems, the differences will be more than skin deep syntax, and you
-will probably have to make changes to account for semantic differences.  You are
-adding frustration today for a future (rare) possibility.
+will probably have to make changes to account for semantic differences.  A
+cross-database DSL adds frustration today for a future (rare) possibility.
 
 In addition, a store need not be a database, and wayfarer does not assume that
 it is.  There is no DSL that will unify an RDBMS and Redis.  Even against a
