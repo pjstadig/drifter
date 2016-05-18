@@ -1,4 +1,4 @@
-(defproject pjstadig/wayfarer "0.1.0-SNAPSHOT"
+(defproject pjstadig/wayfarer "0.1.0"
   :description "A simple, programmable migration library."
   :url "https://github.com/pjstadig/wayfarer"
   :license {:name "Eclipse Public License"
