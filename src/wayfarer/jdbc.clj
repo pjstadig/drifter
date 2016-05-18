@@ -4,6 +4,34 @@
 ;;;; terms of the Eclipse Public License v1.0 which accompanies this
 ;;;; distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
 (ns wayfarer.jdbc
+  "A JDBC backend implementation for wayfarer.  This backend can be used to run
+  migrations against a JDBC database.  It supports the following initialization
+  options:
+
+  :url -> the JDBC URL of the database that should be migrated
+
+  An example URL is:
+
+  \"jdbc:postgresql://localhost/wayfarer?user=wayfarer&password=wayfarer\"
+
+  Upon initialization, wayfarer will create a table named \"migrations\" (if it
+  does not already exist), and use that for tracking which migrations have been
+  completed.
+
+  A migration is a hash map with the following keys:
+
+  :id -> a UUID that uniquely identifies this migration
+  :migration -> a string; the SQL command to be executed
+
+  An example migration is:
+
+  {:id #uuid \"ebbb9b5a-fc77-4b64-9e13-8caf4c17cd8f\"
+   :migration \"CREATE TABLE foo(id BIGINT PRIMARY KEY)\"}
+
+  A single transaction is used both for running the SQL command and for marking
+  the migration complete.  This means in databases (like PostgreSQL) that
+  support transactional DDL both the migration and marking it complete will
+  succeed or neither will."
   (:require
    [clojure.java.jdbc :as jdbc]
    [clojure.string :refer [join]]

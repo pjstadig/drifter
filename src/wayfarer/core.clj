@@ -9,15 +9,31 @@
    [wayfarer.protocol :as proto]))
 
 (defn init
-  [options]
+  "Initializes a store against which you would like to run migrations.
+  The :backend key will specify which backend to use (currently only :jdbc).
+  The other options are backend specific.  For more information, please see the
+  namespace docstrings for any of the backends.
+
+  An example initialization map is:
+
+  {:backend :jdbc
+   :url \"jdbc:postgresql://localhost/wayfarer?user=wayfarer&password=wayfarer\"}"
+  [{:keys [backend] :as options}]
   (proto/init options))
 
 (defn completed-migration-ids
+  "A set of the ids of all completed migrations.  The ids are strings and are
+  expected to be a string representation of a
+  UUID (e.g. \"ebbb9b5a-fc77-4b64-9e13-8caf4c17cd8f\")."
   [store]
-  (with-open [connection (proto/connect store)]
-    (proto/completed-migration-ids connection)))
+  (set
+   (with-open [connection (proto/connect store)]
+     (proto/completed-migration-ids connection))))
 
 (defn migrate
+  "Connect to the store (which should have been created with init) and, in the
+  order they are specified, execute all of the given migrations that have not
+  already been executed."
   [store migrations]
   (with-open [connection (proto/connect store)]
     (let [completed-ids (proto/completed-migration-ids connection)
