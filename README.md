@@ -129,8 +129,7 @@ cross-database DSL adds frustration today for a future (rare) possibility.
 In addition, a store need not be a database, and wayfarer does not assume that
 it is.  There is no DSL that will unify an RDBMS and Redis.  Even against a
 database you may want to run arbitrary Clojure migrations that query some data,
-munge it, and reinsert it.  There is no DSL that will unify a SQL DML and
-arbitrary Clojure functions.
+munge it, and reinsert it.
 
 A wayfarer migration is specialized for a particular backend.  In the case of
 the JDBC backend, a migration is a string of arbitrary SQL that is specialized
