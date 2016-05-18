@@ -26,7 +26,11 @@
   An example migration is:
 
   {:id #uuid \"ebbb9b5a-fc77-4b64-9e13-8caf4c17cd8f\"
-   :migration \"CREATE TABLE foo(id BIGINT PRIMARY KEY)\"}
+    :migration (string/join \" \" \"CREATE TABLE users(\"
+                                \"  id BIGSERIAL PRIMARY KEY,\"
+                                \"  name VARCHAR(2000),\"
+                                \"  created TIMESTAMP(6) NOT NULL DEFAULT 'now'\"
+                                \")\")}
 
   A single transaction is used both for running the SQL command and for marking
   the migration complete.  This means in databases (like PostgreSQL) that
