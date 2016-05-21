@@ -10,6 +10,7 @@
                    :all (constantly true)
                    :mysql :mysql
                    :postgresql :postgresql}
+  :global-vars {*warn-on-reflection* true}
   :profiles
   {:dev {:dependencies [[mysql/mysql-connector-java "5.1.38"]
                         [org.postgresql/postgresql "9.4.1208.jre7"]]}})

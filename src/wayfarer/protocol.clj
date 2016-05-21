@@ -8,11 +8,11 @@
 (defmulti init :backend)
 
 (defprotocol IStore
-  (connect [this]))
+  (connect ^java.io.Closeable [this]))
 
 (defprotocol IConnection
   (completed-migration-ids [this])
-  (start-transaction [this]))
+  (start-transaction ^java.io.Closeable [this]))
 
 (defprotocol ITransaction
   (execute [this migration])
