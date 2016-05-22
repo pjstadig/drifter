@@ -3,6 +3,7 @@
 if type mysql &>/dev/null; then
   mysql -u root <<-EOF
 DROP DATABASE IF EXISTS wayfarer_test;
+DROP DATABASE IF EXISTS wayfarer_test_schema;
 EOF
 
   (mysql -u root <<-EOF &>/dev/null) || true
@@ -12,7 +13,7 @@ EOF
   mysql -u root <<-EOF
 CREATE USER 'wayfarer'@'localhost' IDENTIFIED BY 'wayfarer';
 CREATE DATABASE wayfarer_test;
-GRANT ALL PRIVILEGES ON wayfarer_test.* TO 'wayfarer'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'wayfarer'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 fi

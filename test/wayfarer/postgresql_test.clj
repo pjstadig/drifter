@@ -19,15 +19,18 @@
           database user password))
 
 (defn tables
-  [url]
-  (let [sql ["SELECT tablename"
-             "FROM pg_catalog.pg_tables"
-             "WHERE schemaname = ?"
-             " AND tableowner = ?"]]
-    (jdbc/query url
-                [(join " " sql)
-                 "public" user]
-                {:row-fn :tablename})))
+  ([url]
+   (tables url "public"))
+  ([url schema]
+   (let [sql ["SELECT tablename"
+              "FROM pg_catalog.pg_tables"
+              "WHERE schemaname = ?"
+              " AND tableowner = ?"]]
+     (jdbc/query url
+                 [(join " " sql)
+                  schema
+                  user]
+                 {:row-fn :tablename}))))
 
 (use-fixtures :once
   (partial test/fixture "PostgreSQL" url tables))

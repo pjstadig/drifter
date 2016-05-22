@@ -8,7 +8,13 @@
   migrations against a JDBC database.  It supports the following initialization
   options:
 
-  :url -> the JDBC URL of the database that should be migrated
+  :url     the JDBC URL of the database that should be migrated.
+  :table   the name of the table that is used to record completed migrations.
+           Defaults to \"migrations\".
+  :schema  the name of the schema into which the migrations table will be
+           created.  If unspecified, then no schema will be used and the
+           migration table will be created in whatever default schema the
+           database server uses.  Defaults to nil.
 
   An example URL is:
 
@@ -20,8 +26,8 @@
 
   A migration is a hash map with the following keys:
 
-  :id -> a UUID that uniquely identifies this migration
-  :migration -> a string; the SQL command to be executed
+  :id         a UUID that uniquely identifies this migration
+  :migration  a string; the SQL command to be executed
 
   An example migration is:
 
@@ -42,7 +48,7 @@
    [wayfarer.protocol :as proto]))
 
 (defrecord Transaction
-    [conn auto-commit transaction-isolation read-only?]
+    [conn table auto-commit transaction-isolation read-only?]
   java.lang.AutoCloseable
   java.io.Closeable
   (close [this]
@@ -52,9 +58,9 @@
       (.setReadOnly read-only?)))
   proto/ITransaction
   (execute [this {:keys [id migration]}]
-    (jdbc/execute! conn migration)
+    (jdbc/execute! conn migration {:transaction? false})
     (jdbc/insert! conn
-                  "migrations"
+                  table
                   {:id (str id)
                    :created (-> (java.util.Date.)
                                 .getTime
@@ -65,13 +71,13 @@
     (.commit (jdbc/db-connection conn))))
 
 (defrecord Connection
-    [conn]
+    [conn table]
   proto/IConnection
   (completed-migration-ids [this]
     (set
      (jdbc/with-db-transaction [conn conn]
        (jdbc/query conn
-                   ["SELECT id FROM migrations ORDER BY created"]
+                   [(str "SELECT id FROM " table " ORDER BY created")]
                    {:row-fn (comp str :id)}))))
   (start-transaction [this]
     (let [sql-conn (jdbc/db-connection conn)
@@ -83,32 +89,39 @@
         (.setTransactionIsolation
          java.sql.Connection/TRANSACTION_REPEATABLE_READ)
         (.setReadOnly false))
-      (->Transaction conn auto-commit transaction-isolation read-only?)))
+      (->Transaction conn table auto-commit transaction-isolation read-only?)))
   java.lang.AutoCloseable
   java.io.Closeable
   (close [this]
     (.close (jdbc/db-connection conn))))
 
 (defrecord Store
-    [url]
+    [url table]
   proto/IStore
   (connect [this]
     (let [conn (jdbc/get-connection url)]
       (try
-        (->Connection (jdbc/add-connection url conn))
+        (->Connection (jdbc/add-connection url conn) table)
         (catch Throwable t
           (.close conn))))))
 
-(def migrations
-  [["CREATE TABLE IF NOT EXISTS migrations("
-    "  id VARCHAR(36) PRIMARY KEY,"
-    "  created TIMESTAMP(6) NOT NULL"
-    ")"]])
+(defn init-migrations
+  [schema table]
+  (let [qualified-table (str (when schema (str schema ".")) table)]
+    (concat (when schema
+              [["CREATE SCHEMA IF NOT EXISTS" schema]])
+            [["CREATE TABLE IF NOT EXISTS" qualified-table "("
+              "  id VARCHAR(36) PRIMARY KEY,"
+              "  created TIMESTAMP(6) NOT NULL"
+              ")"]])))
 
 (defmethod proto/init :jdbc
-  [{:keys [url]}]
-  (jdbc/with-db-connection [conn url]
-    (doseq [migration migrations]
-      (jdbc/with-db-transaction [conn conn]
-        (jdbc/execute! conn (join " " migration) {:transaction? false}))))
-  (->Store url))
+  [{:keys [url schema table]}]
+  (let [schema (when schema (name schema))
+        table (name (or table "migrations"))]
+    (jdbc/with-db-connection [conn url]
+      (doseq [migration (init-migrations schema table)
+              :let [sql (join " " migration)]]
+        (jdbc/with-db-transaction [conn conn]
+          (jdbc/execute! conn sql {:transaction? false}))))
+    (->Store url (str (when schema (str schema ".")) table))))

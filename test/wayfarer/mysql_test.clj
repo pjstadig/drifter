@@ -19,13 +19,15 @@
           database user password))
 
 (defn tables
-  [url]
-  (let [sql ["SELECT table_name"
-             "FROM information_schema.tables"
-             "WHERE table_schema = ?"]]
-    (jdbc/query url
-                [(join " " sql) database]
-                {:row-fn :table_name})))
+  ([url]
+   (tables url database))
+  ([url database]
+   (let [sql ["SELECT table_name"
+              "FROM information_schema.tables"
+              "WHERE table_schema = ?"]]
+     (jdbc/query url
+                 [(join " " sql) database]
+                 {:row-fn :table_name}))))
 
 (use-fixtures :once
   (partial test/fixture "MySQL" url tables))
